@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>JSDoc: Source: AddEditBehaviour.js</title>
+
+  <script src="scripts/prettify/prettify.js"> </script>
+  <script src="scripts/prettify/lang-css.js"> </script>
+  <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+  <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+  <div id="main">
+
+    <h1 class="page-title">Source: AddEditBehaviour.js</h1>
+
+
+
+
+
+
+    <section>
+      <article>
+        <pre class="prettyprint source linenums"><code>import React, { useState, useEffect } from "react";
+import { Paper, Button, AppBar, Toolbar, Modal, CardActionArea, CardContent, CardActions, Card, Typography, Select, MenuItem, Grid } from "@material-ui/core";
+import ArrowBackIcon from "@material-ui/icons/ArrowBack";
+import EditIcon from "@material-ui/icons/Edit";
+import { useHistory } from "react-router";
+import axios from "axios";
+import { makeStyles } from '@material-ui/core/styles';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableContainer from '@material-ui/core/TableContainer';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import { EditMovementBody } from "../Behaviour Modal/EditMovementBody";
+import { EditHeadBody } from "../Behaviour Modal/EditHeadBody";
+import { EditSpeakBody } from "../Behaviour Modal/EditSpeakBody";
+import { EditAudioBody } from "../Behaviour Modal/EditAudioBody";
+import { EditVideoBody } from "../Behaviour Modal/EditVideoBody";
+import { EntryBehaviourModal } from "../Behaviour Modal/EntryBehaviourModal";
+import { useDispatch } from "react-redux";
+import { behaviourStepsApi, behaviourUpdateApi } from '../../../redux/slices/BehaviourSlice';
+import ImageIcon from "@material-ui/icons/Image";
+import DeleteIcon from '@material-ui/icons/Delete';
+
+const useStyles = makeStyles((theme) => ({
+  table: {
+    minWidth: 650,
+  },
+  text: {
+    padding: theme.spacing(2, 2, 0),
+  },
+  paper: {
+    paddingBottom: 50,
+  },
+  list: {
+    marginBottom: theme.spacing(2),
+  },
+  subheader: {
+    backgroundColor: theme.palette.background.paper,
+  },
+  appBar: {
+    top: 'auto',
+    bottom: 0,
+    left: '11em',
+  },
+  grow: {
+    flexGrow: 1,
+  },
+  fabButton: {
+    position: 'absolute',
+    zIndex: 1,
+    top: -30,
+    left: 0,
+    right: 0,
+    margin: '0 auto',
+  },
+}));
+
+const AddEditBehaviour = (props) => {
+
+  const classes = useStyles();
+  const dispatch = useDispatch();
+  const history = useHistory();
+  const navbehaviorID = history?.location.state;
+  console.log(navbehaviorID);
+  useEffect(async () => {
+    if (navbehaviorID?.behavior_id) {
+      setBehavior_id(navbehaviorID.behavior_id);
+      getSteps(navbehaviorID.behavior_id);
+      getBehaviorInfo(navbehaviorID);
+    }
+  }, []);
+  const [entryOpen, setEntryOpen] = useState(navbehaviorID?.behavior_id ? false : true);
+  useEffect(async () => {
+    await axios.get(`https://ingendynamics.com/api/v1/user/all-robot?userId=${userId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${userToken}`
+        }
+      })
+      .then(res => {
+        console.log(res)
+        let temp = [];
+        for (var i = 0; i &lt; res.data.data.length; i++) {
+          temp.push(res.data.data[i])
+        }
+        setInitialRobot(temp[0]);
+        setRobotList(temp);
+      }).catch(error => {
+        if (error.response.status === 500) {
+          alert('SERVER UNDER MAINTAINENCE, Try again!');
+        }
+      });
+  }, []);
+
+  const [initialRobot, setInitialRobot] = useState({});
+  let [behavior_id, setBehavior_id] = useState('');
+  const userToken = localStorage.getItem("userToken");
+  const userId = localStorage.getItem("userId");
+
+  const [steps, setSteps] = useState([
+  ]);
+  const [open, setOpen] = React.useState(false);
+  const [reset, setReset] = useState(false);
+  const [indexShuffle, setIndexShuffle] = useState(false);
+  const [headOpen, setHeadOpen] = React.useState(false);
+  const [speakOpen, setSpeakOpen] = React.useState(false);
+  const [audioOpen, setAudioOpen] = React.useState(false);
+  const [videoOpen, setVideoOpen] = React.useState(false);
+  const [deleteAction, setDeleteAction] = React.useState(false);
+  const [actions, setActions] = useState({
+    movement: false,
+    speak: false,
+    video: false,
+    audio: false,
+    head: false
+  });
+  const [newMovement, setNewMovement] = useState({
+    location_robot_id: null,
+    location_name: null,
+    location_delay: '0s'
+  });
+  const [newHead, setNewHead] = useState({
+    pan: null,
+    pan_delay: '0s',
+    tilt: null,
+    tilt_delay: '0s',
+  });
+  const [newSpeak, setNewSpeak] = useState({
+    tts: null,
+    tts_on_screen_flag: null,
+    tts_delay: '0s',
+  });
+  const [newAudio, setNewAudio] = useState({
+    audio_link: null,
+    audio_delay: '0s',
+  });
+  const [newVideo, setNewVideo] = useState({
+    media_link: null,
+    media_delay: '0s',
+  });
+  const [editMovement, setEditMovement] = useState(false);
+  const [editSpeak, setEditSpeak] = useState(false);
+  const [editAudio, setEditAudio] = useState(false);
+  const [editVideo, setEditVideo] = useState(false);
+  const [editHead, setEditHead] = useState(false);
+  const [behaviorEdit, setBehaviorEdit] = useState(false);
+  const [delay, setDelay] = useState([]);
+  const [currentActionRow, setCurrentActionRow] = useState('');
+  const [disabled, setDisabled] = useState(false);
+  const [robotList, setRobotList] = useState([]);
+  const [pan, setPan] = useState([]);
+  const [tilt, setTilt] = useState([]);
+  const [imageUrl, setImageUrl] = useState('');
+  const [behaviorDetails, setBehaviorDetails] = useState({
+    behavior_image: null,
+    behavior_name: null,
+    behavior_description: null
+  });
+
+
+  const locationList = [
+    'Living Room',
+    'Main Gate',
+    'Bed Room'
+  ];
+  const initialLocation = locationList[0];
+  const [barData, setBarData] = useState({
+    start_from: 'Start From 1',
+    repeat_sequence: 'No Repeat',
+    robot_id: '',
+  });
+
+  const [cssCondition, setCssCondition] = useState(false);
+  const [customCSS, setCustomeCSS] = useState({
+    background: 'red',
+    color: 'white'
+  });
+
+  const rseqList = [
+    'No Repeat',
+    'Loop',
+    'Repeat 1 time'
+  ];
+
+  const handleSpecificActionDelete = (row, action) => () => {
+    setDeleteAction(true);
+
+    let items = [...steps];
+    let con;
+    if (action === 'movement') {
+      con = {
+        ...items[row.step_id],
+        location_name: null,
+        location_delay: null,
+        location_robot_id: null
+      }
+    } else if (action === 'head') {
+      con = {
+        ...items[row.step_id],
+        pan: null,
+        pan_delay: null,
+        tilt: null,
+        tilt_delay: null,
+      }
+    } else if (action === 'speak') {
+      con = {
+        ...items[row.step_id],
+        tts: null,
+        tts_on_screen_flag: null,
+        tts_delay: null,
+      }
+    } else if (action === 'audio') {
+      con = {
+        ...items[row.step_id],
+        audio_link: null,
+        audio_delay: null,
+      }
+    } else if (action === 'video') {
+      con = {
+        ...items[row.step_id],
+        media_link: null,
+        media_delay: null,
+      }
+    }
+
+
+    items[row.step_id] = con;
+    setSteps(items);
+    clearStep(items);
+    setIndexShuffle(true);
+  }
+
+  const clearStep = (steps) => {
+
+    steps.forEach(stepID => {
+
+      if (stepID.location_delay === null &amp;&amp;
+        stepID.location_name === null &amp;&amp;
+        stepID.location_robot_id === null &amp;&amp;
+        stepID.pan === null &amp;&amp;
+        stepID.pan_delay === null &amp;&amp;
+        stepID.tilt === null &amp;&amp;
+        stepID.tilt_delay === null &amp;&amp;
+        stepID.tts === null &amp;&amp;
+        stepID.tts_delay === null &amp;&amp;
+        stepID.media_link === null &amp;&amp;
+        stepID.media_delay === null &amp;&amp;
+        stepID.audio_link === null &amp;&amp;
+        stepID.audio_delay === null) {
+
+
+        setSteps(steps.filter((el) => el.step_id !== stepID.step_id));
+
+      }
+    });
+
+  }
+  useEffect(() => {
+    if (indexShuffle) {
+      indexMod();
+    }
+  }, [indexShuffle]);
+  const indexMod = () => {
+
+    steps.map(step => {
+
+
+      const indexVal = steps.indexOf(step);
+
+      const items = [...steps];
+      const item = {
+        ...items[indexVal],
+        step_id: indexVal
+      }
+      items[indexVal] = item;
+
+      setSteps(items);
+    });
+    setIndexShuffle(false);
+  }
+
+
+  const handleRow = () => {
+    const step = steps.length - 1;
+    console.log(behavior_id)
+    setSteps([
+      ...steps,
+      {
+        step_id: steps.length,
+        behavior_id: behavior_id,
+        location_robot_id: null,
+        location_name: null,
+        location_delay: null,
+        location_must_complete: false,
+        tts: null,
+        tts_on_screen_flag: false,
+        tts_delay: null,
+        media_link: null,
+        media_delay: null,
+        audio_link: null,
+        audio_delay: null,
+        pan: null,
+        pan_delay: null,
+        tilt: null,
+        tilt_delay: null
+      }]);
+
+  }
+
+  const deleteStep = async (stepId) => {
+    await axios.delete(`https://ingendynamics.com/api/v1/user/step/${stepId}?userId=${userId}&amp;behaviorId=${behavior_id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${userToken}`
+        }
+      })
+      .then(res => {
+        // if(res.data)
+      }).catch(error => {
+        if (error.response.status === 500) {
+          alert('SERVER UNDER MAINTAINENCE, Try again!');
+        }
+      });
+  }
+
+  const handleSpecificDeleteRow = (row) => () => {
+
+    setSteps(steps.filter((el) => el.step_id !== row));
+    deleteStep(row);
+
+  }
+
+  function handleActionModal(action) {
+    setActions({
+      ...actions,
+      [action]: true,
+    });
+    if (action === 'head') {
+      setHeadOpen(true);
+    } else if (action === 'movement') {
+      setOpen(true);
+    } else if (action === 'speak') {
+      setSpeakOpen(true);
+    } else if (action === 'audio') {
+      setAudioOpen(true);
+    } else if (action === 'video') {
+      setVideoOpen(true);
+    }
+  }
+
+  const rowSetter = (action, row, edit) => () => {
+    if (edit === true &amp;&amp; action === 'movement') {
+      setEditMovement(true);
+    } else if (edit === true &amp;&amp; action === 'speak') {
+      setEditSpeak(true);
+    } else if (edit === true &amp;&amp; action === 'video') {
+      setEditVideo(true);
+    } else if (edit === true &amp;&amp; action === 'audio') {
+      setEditAudio(true);
+    } else if (edit === true &amp;&amp; action === 'head') {
+      setEditHead(true);
+    }
+    setCurrentActionRow(row);
+    handleActionModal(action);
+  }
+
+  const handleClose = () => {
+    setActions({ ...actions, movement: false });
+    setOpen(false);
+    setEditMovement(false);
+  }
+
+  const handleBehaviourModalClose = () => {
+    setEntryOpen(false);
+  }
+
+  const handleHeadClose = () => {
+    setActions({ ...actions, head: false });
+    setHeadOpen(false);
+  }
+
+  const handleSpeakClose = () => {
+    setActions({ ...actions, speak: false });
+    setSpeakOpen(false);
+    // setEditSpeak(false);
+  }
+
+  const handleAudioClose = () => {
+    setActions({ ...actions, audio: false });
+    setAudioOpen(false);
+  }
+
+  const handleVideoClose = () => {
+    setActions({ ...actions, video: false });
+    setVideoOpen(false);
+  }
+
+  // working
+
+  const getBehaviorInfo = async (data) => {
+    console.log(data)
+    setBehaviorDetails({
+      behavior_name: data.behavior_name,
+      behavior_description: data.behavior_description,
+      behavior_image: data.behavior_image_url
+    });
+    setBarData({
+      start_from: data.behavior_start_from,
+      repeat_sequence: data.behavior_repeat_sequence,
+      robot_id: data.behavior_robot_id,
+    })
+  }
+
+  const getSteps = async (id) => {
+    await axios.get(`https://ingendynamics.com/api/v1/user/step?userId=${userId}&amp;behaviorId=${id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${userToken}`
+        }
+      })
+      .then(res => {
+        console.log(res);
+        setSteps(res.data.data);
+        console.log(steps);
+      }).catch(error => {
+        if (error.response.status === 500) {
+          alert('SERVER UNDER MAINTAINENCE, Try again!');
+        }
+      });
+  }
+
+
+  useEffect(async () => {
+    await axios.get(`https://ingendynamics.com/api/v1/user/timedelay?userId=${userId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${userToken}`
+        }
+      })
+      .then(res => {
+        const timer = res.data.data;
+        Object.keys(timer).map(res => {
+          setDelay(delay => delay.concat(timer[res].delay));
+        }
+        )
+      }).catch(error => {
+        if (error.response.status === 500) {
+          alert('SERVER UNDER MAINTAINENCE, Try again!');
+        }
+      });
+  }, []);
+
+  useEffect(async () => {
+    await axios.get(`https://ingendynamics.com/api/v1/user/tilt?userId=${userId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${userToken}`
+        }
+      })
+      .then(res => {
+        const tiltData = res.data.data;
+        Object.keys(tiltData).map(res => {
+          setTilt(tilt => tilt.concat(tiltData[res].angle));
+        }
+        )
+      }).catch(error => {
+        if (error.response.status === 500) {
+          alert('SERVER UNDER MAINTAINENCE, Try again!');
+        }
+      });
+  }, []);
+
+  useEffect(async () => {
+    await axios.get(`https://ingendynamics.com/api/v1/user/pan?userId=${userId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${userToken}`
+        }
+      })
+      .then(res => {
+        const panData = res.data.data;
+
+        Object.keys(panData).map(res => {
+          setPan(pan => pan.concat(panData[res].angle));
+        }
+        )
+      }).catch(error => {
+        if (error.response.status === 500) {
+          alert('SERVER UNDER MAINTAINENCE, Try again!');
+        }
+      });
+  }, []);
+
+  const handleBehaviorChange = ({ target }) => {
+    const { name, value } = target;
+
+
+    setBehaviorDetails({
+      ...behaviorDetails,
+      [name]: value
+    });
+  }
+
+  /**
+    * Represents Create New Behavior Module
+    * @module {function} Add Behavior
+    */
+  const addApi = async (data) => {
+    await axios.post(`https://ingendynamics.com/api/v1/user/behavior?robotId=${initialRobot.robot_id}&amp;userId=${userId}`,
+      {
+        name: data.behavior_name,
+        description: data.behavior_description,
+        image_url: data.behavior_image,
+        robot_id: initialRobot.robot_id
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${userToken}`
+        }
+      })
+      .then((res) => {
+        console.log("Behaviour Add API Checkpoint: ", res);
+        const behaviour_id = res.data.data.behavior_id;
+        console.log(res.data.data.behavior_id);
+        setBehavior_id(behaviour_id);
+        localStorage.setItem("behaviour_id", behaviour_id);
+        if (res.status === 200) {
+          console.log("behaviour ", behaviour_id);
+        };
+      }).catch(error => {
+        if (error.response.status === 500) {
+          alert('SERVER UNDER MAINTAINENCE, Try again!');
+        }
+      });
+  }
+
+  const handleBehaviorSubmit = (event) => {
+    event.preventDefault();
+    console.log("behavior Edit ==========>", behaviorEdit);
+    const objc = {
+      ...behaviorDetails,
+      behavior_image: behaviorDetails.behavior_image,
+      behavior_name: behaviorDetails.behavior_name,
+      behavior_description: behaviorDetails.behavior_description,
+    };
+
+    objc.robot_id = initialRobot.robot_id;
+
+    if (behaviorEdit === true) {
+      console.log("inside")
+      behaviourUpdateApi(objc, behavior_id);
+      alert('Behavior updated!');
+    } else {
+      addApi(objc);
+    }
+
+    handleBehaviourModalClose(true);
+  }
+
+
+
+  const handleSpeakChange = ({ target }) => {
+    const { name, value } = target;
+
+
+    setNewSpeak({
+      ...newSpeak,
+      [name]: value
+    });
+  }
+
+  const handleAudioChange = ({ target }) => {
+    const { name, value } = target;
+    setNewAudio((prev) => ({
+      ...prev,
+      [name]: value
+    }));
+  }
+
+  const handleVideoChange = ({ target }) => {
+    const { name, value } = target;
+    setNewVideo((prev) => ({
+      ...prev,
+      [name]: value
+    }));
+  }
+
+  const handleHeadChange = ({ target }) => {
+
+    const { name, value } = target;
+    setNewHead((prev) => ({
+      ...prev,
+      [name]: value
+    }));
+  }
+
+
+  const handleSpeakSubmit = (event) => {
+
+    event.preventDefault();
+    const stepIndex = currentActionRow.step_id;
+
+    let miniObj3 = {
+      tts: !newSpeak.tts ? steps[stepIndex].tts : newSpeak.tts,
+      tts_on_screen_flag: !newSpeak.tts_on_screen_flag ? steps[stepIndex].tts_on_screen_flag : newSpeak.tts_on_screen_flag,
+      tts_delay: !newSpeak.tts_delay ? steps[stepIndex].tts_delay : newSpeak.tts_delay,
+    }
+
+    const items = [...steps];
+
+    let item3 = {
+      ...items[stepIndex],
+      tts: miniObj3.tts,
+      tts_on_screen_flag: miniObj3.tts_on_screen_flag,
+      tts_delay: miniObj3.tts_delay,
+    }
+
+    items[stepIndex] = item3;
+
+    setSteps(items);
+
+    if (editSpeak === false) {
+      setNewSpeak({});
+    }
+
+    setDisabled(true);
+    handleSpeakClose(true);
+    setEditSpeak(false);
+  }
+
+
+  const handleAudioSubmit = (event) => {
+
+    event.preventDefault();
+    const stepIndex = currentActionRow.step_id;
+
+    let miniObj4 = {
+      audio_link: !newAudio.audio_link ? steps[stepIndex].audio_link : newAudio.audio_link,
+      audio_delay: !newAudio.audio_delay ? steps[stepIndex].audio_delay : newAudio.audio_delay
+    }
+
+    const items = [...steps];
+
+    let item4 = {
+      ...items[stepIndex],
+      audio_link: miniObj4.audio_link,
+      audio_delay: miniObj4.audio_delay,
+    }
+
+    items[stepIndex] = item4;
+
+    setSteps(items);
+
+    if (editAudio === false) {
+      setNewAudio({});
+    }
+
+    setDisabled(true);
+    handleAudioClose(true);
+    setEditAudio(false);
+  }
+
+  const handleVideoSubmit = (event) => {
+
+    event.preventDefault();
+    const stepIndex = currentActionRow.step_id;
+
+    let miniObj5 = {
+      media_link: newVideo.media_link,
+      media_delay: newVideo.media_delay,
+    }
+
+    const items = [...steps];
+
+    let item5 = {
+      ...items[stepIndex],
+      media_link: miniObj5.media_link,
+      media_delay: miniObj5.media_delay,
+    }
+
+    items[stepIndex] = item5;
+
+    setSteps(items);
+
+    if (editVideo === false) {
+      setNewVideo({});
+    }
+
+    setDisabled(true);
+    handleVideoClose(true);
+    setEditVideo(false);
+  }
+
+  const handleHeadSubmit = (event) => {
+
+    event.preventDefault();
+    const stepIndex = currentActionRow.step_id;
+
+    let miniObj2 = {
+      pan: !newHead.pan ? steps[stepIndex].pan : newHead.pan,
+      pan_delay: !newHead.pan_delay ? steps[stepIndex].pan_delay : newHead.pan_delay,
+      tilt: !newHead.tilt ? steps[stepIndex].tilt : newHead.tilt,
+      tilt_delay: !newHead.tilt_delay ? steps[stepIndex].tilt_delay : newHead.tilt_delay
+    }
+
+    const items = [...steps];
+
+    let item2 = {
+      ...items[stepIndex],
+      pan: miniObj2.pan,
+      pan_delay: miniObj2.pan_delay,
+      tilt: miniObj2.tilt,
+      tilt_delay: miniObj2.tilt_delay,
+    }
+
+    items[stepIndex] = item2;
+
+    setSteps(items);
+
+    if (editHead === false) {
+      setNewHead({});
+    }
+    setDisabled(true);
+    handleHeadClose(true);
+    setEditHead(false);
+  }
+
+  const handleMovementChange = ({ target }) => {
+
+    const { name, value } = target;
+    setNewMovement((prev) => ({
+      ...prev,
+      [name]: value
+    }));
+  }
+
+  const handleMovementSubmit = (event) => {
+
+    event.preventDefault();
+    const stepIndex = currentActionRow.step_id;
+
+    let miniObj = {
+      location_delay: !newMovement.location_delay ? steps[stepIndex].location_delay : newMovement.location_delay,
+      location_robot_id: !newMovement.location_robot_id ? steps[stepIndex].location_robot_id : newMovement.location_robot_id,
+      location_name: !newMovement.location_name ? steps[stepIndex].location_name : newMovement.location_name,
+    }
+
+
+
+    const items = [...steps];
+
+    let item = {
+      ...items[stepIndex],
+      location_delay: miniObj.location_delay,
+      location_name: miniObj.location_name,
+      location_robot_id: miniObj.location_robot_id,
+    }
+
+    items[stepIndex] = item;
+
+    setSteps(items);
+
+    if (editMovement === false) {
+      setNewMovement({});
+    }
+    setDisabled(true);
+    handleClose(true);
+    setEditMovement(false);
+  }
+
+  const handleBar = ({ target }) => {
+    const { name, value } = target;
+    console.log(value)
+
+    setBarData({ ...barData, [name]: value });
+
+  }
+
+  const handleDiplayScreenText = ({ target }, row) => {
+    const { name, checked } = target;
+
+
+    let items = [...steps];
+
+    const item = {
+      ...items[row.step_id],
+      [name]: checked
+    }
+
+    items[row.step_id] = item;
+
+    setSteps(items);
+
+  }
+
+  const handleMustComplete = ({ target }, row) => {
+    const { name, checked } = target;
+
+
+    let items = [...steps];
+
+    const item = {
+      ...items[row.step_id],
+      [name]: checked
+    }
+
+    items[row.step_id] = item;
+
+    setSteps(items);
+
+  }
+
+  const handleSaveSteps = () => {
+    const data = {};
+
+    data.behavior_id = behavior_id;
+    data.behavior_name = behaviorDetails.behavior_name;
+    data.behavior_description = behaviorDetails.behavior_description;
+    data.behavior_image = behaviorDetails.behavior_image;
+    data.start_from = barData.start_from;
+    data.repeat_sequence = barData.repeat_sequence;
+    data.robot_id = barData.robot_id;
+
+    if (barData.robot_id === null) {
+      setCustomeCSS(true);
+      alert('Choose Robot ID from Bottom Bar!');
+
+    } else {
+      const finalSteps = {};
+      console.log(barData)
+      console.log(data);
+      dispatch(behaviourUpdateApi(data, behavior_id));
+      console.log(behavior_id);
+      console.log(" CHECK FOR THE STEPS STATE ====> ", steps)
+      dispatch(behaviourStepsApi(steps, behavior_id, initialRobot.robot_id));
+      history.push('/behaviour');
+    }
+  }
+
+  const updateImageUrl = (imageLink) => {
+    setImageUrl(imageLink);
+    // set
+  }
+
+  const backFunction = () => {
+    if (steps.length === 0) {
+      const data = {};
+
+      data.behavior_id = behavior_id;
+      data.behavior_name = behaviorDetails.behavior_name;
+      data.behavior_description = behaviorDetails.behavior_description;
+      data.behavior_image = behaviorDetails.behavior_image;
+      data.start_from = barData.start_from;
+      data.repeat_sequence = barData.repeat_sequence;
+      data.robot_id = initialRobot.robot_id;
+
+      dispatch(behaviourUpdateApi(data, behavior_id));
+      history.push('/behaviour');
+    } else {
+      history.push('/behaviour');
+    }
+  }
+
+  return (
+    console.log("[DATA CHANGED]", steps),
+    &lt;>
+      &lt;h1 style={{ margin: '1em 0' }}>BEHAVIOR ADD&lt;/h1>
+      &lt;Grid item xs={12} style={{ margin: '1em 0', border: '1px solid black', padding: '2em 1em' }}>
+        &lt;Grid container>
+          &lt;Grid item xs={1}>
+            &lt;Button startIcon={&lt;ArrowBackIcon fontSize="large" />} onClick={() => backFunction()} />
+          &lt;/Grid>
+          &lt;Grid item xs={1}>
+            {behaviorDetails.behavior_image ? (&lt;img src={behaviorDetails?.behavior_image} height='50px' width='50px' />)
+              : (&lt;ImageIcon style={{ fontSize: 40 }} />)
+            }
+          &lt;/Grid>
+          &lt;Grid item xs={9}>
+            &lt;Typography variant="h4">
+              {behaviorDetails?.behavior_name}
+            &lt;/Typography>{" "}
+            &lt;Typography variant="h6" noWrap={true}>
+              {behaviorDetails?.behavior_description}
+            &lt;/Typography>
+          &lt;/Grid>
+          &lt;Grid item xs={1}>
+            &lt;Button
+              startIcon={&lt;EditIcon style={{ fontSize: 30 }} />}
+              onClick={() => {
+                setEntryOpen(true);
+                setBehaviorEdit(true);
+              }}
+            >&lt;/Button>
+          &lt;/Grid>
+        &lt;/Grid>
+      &lt;/Grid>
+      &lt;TableContainer component={Paper} style={{ borderTop: '4px solid tomato', paddingBottom: '4em' }}>
+        &lt;Table className={classes.table} aria-label="simple table">
+          &lt;TableHead>
+            &lt;TableRow>
+              &lt;TableCell style={{ width: '1em' }}>&lt;/TableCell>
+              &lt;TableCell align="left" style={{ width: '16em' }}>MOVEMENT&lt;/TableCell>
+              &lt;TableCell align="left" style={{ width: '16em' }}>SPEAK&lt;/TableCell>
+              &lt;TableCell align="left" style={{ width: '16em' }}>MEDIA&lt;/TableCell>
+              &lt;TableCell align="left" style={{ width: '16em' }}>AUDIO&lt;/TableCell>
+              &lt;TableCell align="left" style={{ width: '16em' }}>HEAD&lt;/TableCell>
+            &lt;/TableRow>
+          &lt;/TableHead>
+          &lt;TableBody style={{ borderTop: '3px solid tomato' }}>
+            {steps?.length > 0 &amp;&amp; steps.map((row, index) =>
+              &lt;TableRow key="unique_0011">
+                &lt;TableCell component="th" scope="row">
+                  STEP {index + 1}
+                  &lt;Button onClick={handleSpecificDeleteRow(row?.step_id)} style={{ color: 'red' }}>&lt;DeleteIcon />&lt;/Button>
+                &lt;/TableCell>
+                &lt;TableCell align="left">
+                  {row.location_robot_id || row.location_name || row.location_delay ? (&lt;Card className={classes.root}>
+                    &lt;CardActionArea>
+
+                      &lt;CardContent>
+                        &lt;Typography gutterBottom variant="h5" component="h2">
+                          Go to &lt;Button style={{ color: 'red' }} onClick={handleSpecificActionDelete(row, "movement")}>&lt;DeleteIcon />&lt;/Button>
+                          &lt;Button style={{ color: 'chocolate' }} onClick={rowSetter("movement", row, true)}>&lt;EditIcon />&lt;/Button>
+                        &lt;/Typography>
+                        &lt;Typography variant="body2" color="textSecondary" component="p">
+                          {row.location_name}
+                        &lt;/Typography>
+
+                      &lt;/CardContent>
+                    &lt;/CardActionArea>
+                    &lt;CardActions>
+                      &lt;Button size="small" color="primary">
+                        Must Complete  &amp;nbsp;&lt;input type="checkbox" name="location_must_complete" onChange={(event) => handleMustComplete(event, row)} />
+                      &lt;/Button>
+
+                    &lt;/CardActions>
+                  &lt;/Card>) : (
+                    &lt;Button onClick={rowSetter("movement", row, false)}>+&lt;/Button>)}
+                &lt;/TableCell>
+                &lt;TableCell align="left">
+                  {row.tts || row.tts_delay || row.tts_on_screen_flag ? (&lt;Card className={classes.root}>
+                    &lt;CardActionArea>
+                      &lt;CardContent>
+                        &lt;Typography gutterBottom variant="h5" component="h2">
+                          Speak &lt;Button style={{ color: 'red' }} onClick={handleSpecificActionDelete(row, "speak")}>&lt;DeleteIcon />&lt;/Button>
+                          &lt;Button style={{ color: 'chocolate' }} onClick={rowSetter("speak", row, true)}>&lt;EditIcon />&lt;/Button>
+                          &lt;Button size="small" onClick={rowSetter("speak", row, "edit")}>
+                            {/* &lt;EditIcon /> */}
+                          &lt;/Button>
+                        &lt;/Typography>
+                        &lt;Typography variant="body2" color="textSecondary" component="p">
+                          {row.tts}
+                        &lt;/Typography>
+                      &lt;/CardContent>
+                    &lt;/CardActionArea>
+                    &lt;CardActions>
+                    &lt;/CardActions>
+                  &lt;/Card>) : (
+                    &lt;Button onClick={rowSetter("speak", row)}>+&lt;/Button>)}&lt;/TableCell>
+                &lt;TableCell align="left">
+                  {row.media_link || row.media_delay ? (&lt;Card className={classes.root}>
+                    &lt;CardActionArea>
+                      &lt;CardContent>
+                        &lt;Typography gutterBottom variant="h5" component="h2">
+                          Video Link&lt;Button style={{ color: 'red' }} onClick={handleSpecificActionDelete(row, "video")}>&lt;DeleteIcon />&lt;/Button>
+                          &lt;Button style={{ color: 'chocolate' }} onClick={rowSetter("video", row, true)}>&lt;EditIcon />&lt;/Button>
+                          &lt;Button size="small" onClick={rowSetter("video", row, "edit")}>
+                            {/* &lt;EditIcon /> */}
+                          &lt;/Button>
+                        &lt;/Typography>
+                        &lt;Typography variant="body2" color="textSecondary" component="p">
+                          {row.media_link || 'Video File'}
+                        &lt;/Typography>
+                      &lt;/CardContent>
+                    &lt;/CardActionArea>
+                    &lt;CardActions>
+                    &lt;/CardActions>
+                  &lt;/Card>) : (
+                    &lt;Button onClick={rowSetter("video", row)}>+&lt;/Button>)}
+                &lt;/TableCell>
+                &lt;TableCell align="left">
+                  {row.audio_link || row.audio_delay ? (&lt;Card className={classes.root}>
+                    &lt;CardActionArea>
+                      &lt;CardContent>
+                        &lt;Typography gutterBottom variant="h5" component="h2">
+                          Audio Link&lt;Button style={{ color: 'red' }} onClick={handleSpecificActionDelete(row, "audio")}>&lt;DeleteIcon />&lt;/Button>
+                          &lt;Button style={{ color: 'chocolate' }} onClick={rowSetter("audio", row, true)}>&lt;EditIcon />&lt;/Button>
+                          &lt;Button size="small" onClick={rowSetter("audio", row, "edit")}>
+                            {/* &lt;EditIcon /> */}
+                          &lt;/Button>
+                        &lt;/Typography>
+                        &lt;Typography variant="body2" color="textSecondary" component="p">
+                          {row.audio_link || 'Audio File'}
+                        &lt;/Typography>
+                      &lt;/CardContent>
+                    &lt;/CardActionArea>
+                    &lt;CardActions>
+                    &lt;/CardActions>
+                  &lt;/Card>) : (
+                    &lt;Button onClick={rowSetter("audio", row)}>+&lt;/Button>)}
+                &lt;/TableCell>
+                &lt;TableCell align="left">
+                  {row.pan || row.pan_delay || row.tilt || row.tilt_delay ? (&lt;Card className={classes.root}>
+                    &lt;CardActionArea>
+                      &lt;CardContent>
+                        &lt;Typography gutterBottom variant="h5" component="h2">
+                          PAN - TILT&lt;Button style={{ color: 'red' }} onClick={handleSpecificActionDelete(row, "head")}>&lt;DeleteIcon />&lt;/Button>
+                          &lt;Button style={{ color: 'chocolate' }} onClick={rowSetter("head", row, true)}>&lt;EditIcon />&lt;/Button>
+                          &lt;Button size="small" onClick={rowSetter("head", row, "edit")}>
+                            {/* &lt;EditIcon /> */}
+                          &lt;/Button>
+                        &lt;/Typography>
+                        &lt;Typography variant="body2" color="textSecondary" component="p">
+                          {row.pan}{row.pan ? '∡' : null} {row.tilt ? '-' : null} {row.tilt}{row.tilt ? '°' : null}
+                        &lt;/Typography>
+                      &lt;/CardContent>
+                    &lt;/CardActionArea>
+                    &lt;CardActions>
+                    &lt;/CardActions>
+                  &lt;/Card>) : (
+                    &lt;Button onClick={rowSetter("head", row)}>+&lt;/Button>)}
+                &lt;/TableCell>
+              &lt;/TableRow>
+            )}
+            &lt;Button onClick={handleRow}
+              disabled={
+                // steps[steps.length - 1]?.location_robot_id === null &amp;&amp;
+                steps[steps.length - 1]?.location_name === null &amp;&amp;
+                  steps[steps.length - 1].location_delay === null &amp;&amp;
+                  steps[steps.length - 1].location_must_complete === false &amp;&amp;
+                  steps[steps.length - 1].tts === null &amp;&amp;
+                  steps[steps.length - 1].tts_on_screen_flag === false &amp;&amp;
+                  steps[steps.length - 1].tts_delay === null &amp;&amp;
+                  steps[steps.length - 1].media_link === null &amp;&amp;
+                  steps[steps.length - 1].media_delay === null &amp;&amp;
+                  steps[steps.length - 1].audio_link === null &amp;&amp;
+                  steps[steps.length - 1].audio_delay === null &amp;&amp;
+                  steps[steps.length - 1].pan === null &amp;&amp;
+                  steps[steps.length - 1].pan_delay === null &amp;&amp;
+                  steps[steps.length - 1].tilt === null &amp;&amp;
+                  steps[steps.length - 1].tilt_delay === null ? true : false
+              }
+              style={{
+                fontSize: '10px',
+                background: 'tomato', color: 'white', margin: '1em'
+              }}>ADD STEP WITH ACTIONS&lt;/Button>
+          &lt;/TableBody>
+        &lt;/Table>
+      &lt;/TableContainer>
+      &lt;AppBar position="fixed" color="primary" className={classes.appBar} style={{
+        border: '5px solid black',
+        color: 'white !important', paddingRight: '19px'
+      }} >
+        &lt;Toolbar style={{ background: 'white', color: 'black' }}>
+          &lt;label>Start from: &lt;/label>
+          &lt;select
+            name="start_from"
+            labelId="start_from"
+            id="start_from"
+            value={barData.start_from || 'Start from 1'}
+            disabled={
+              // steps.length > 0 &amp;&amp; steps[0]?.location_robot_id !== '' &amp;&amp;
+              steps[0]?.location_name !== '' &amp;&amp;
+                steps[0]?.location_delay !== '' &amp;&amp;
+                steps[0]?.location_must_complete !== false &amp;&amp;
+                steps[0]?.tts !== '' &amp;&amp;
+                steps[0]?.tts_on_screen_flag !== false &amp;&amp;
+                steps[0]?.tts_delay !== '' &amp;&amp;
+                steps[0]?.media_link !== '' &amp;&amp;
+                steps[0]?.media_delay !== '' &amp;&amp;
+                steps[0]?.audio_link !== '' &amp;&amp;
+                steps[0]?.audio_delay !== '' &amp;&amp;
+                steps[0]?.pan !== '' &amp;&amp;
+                steps[0]?.pan_delay !== '' &amp;&amp;
+                steps[0]?.tilt !== '' &amp;&amp;
+                steps[0]?.tilt_delay !== '' || steps.length === 0 ? true : false
+            }
+            onChange={handleBar}
+            style={{ margin: '0 1em', width: '7em' }}
+          >
+            {
+              Object.keys(steps).map((step, indexVal1) => {
+                indexVal1++;
+                // indexval1Setter(step[0]);
+
+                return &lt;option value={'Start From ' + indexVal1}>{'Start From ' + indexVal1}&lt;/option>
+              })
+            }
+          &lt;/select>
+
+          &lt;label>Repeat Sequence: &lt;/label>
+          &lt;select
+            name="repeat_sequence"
+            labelId="repeat_sequence"
+            id="repeat_sequence"
+            value={barData.repeat_sequence || 'No Repeat'}
+            disabled={
+              // steps.length > 0 &amp;&amp; steps[0]?.location_robot_id !== '' &amp;&amp;
+              steps[0]?.location_name !== '' &amp;&amp;
+                steps[0]?.location_delay !== '' &amp;&amp;
+                steps[0]?.location_must_complete !== false &amp;&amp;
+                steps[0]?.tts !== '' &amp;&amp;
+                steps[0]?.tts_on_screen_flag !== false &amp;&amp;
+                steps[0]?.tts_delay !== '' &amp;&amp;
+                steps[0]?.media_link !== '' &amp;&amp;
+                steps[0]?.media_delay !== '' &amp;&amp;
+                steps[0]?.audio_link !== '' &amp;&amp;
+                steps[0]?.audio_delay !== '' &amp;&amp;
+                steps[0]?.pan !== '' &amp;&amp;
+                steps[0]?.pan_delay !== '' &amp;&amp;
+                steps[0]?.tilt !== '' &amp;&amp;
+                steps[0]?.tilt_delay !== '' || steps.length === 0 ? true : false
+            }
+            onChange={handleBar}
+            style={{ margin: '0 1em', width: '7em' }}
+          >
+            {
+              Object.keys(rseqList).map((seq, index) => {
+                return &lt;option value={rseqList[seq]}>{rseqList[seq]}&lt;/option>
+              })
+            }
+          &lt;/select>
+          &lt;label>Robot ID: &lt;/label>
+          &lt;select
+            name="robot_id"
+            labelId="robot_id"
+            id="robot_id"
+            value={barData.robot_id}
+            onChange={handleBar}
+            style={{
+              margin: '0 1em', width: '7em',
+            }}
+          >
+            &lt;option value="" disabled>Choose Robot&lt;/option>
+            {
+              Object.keys(robotList).map((robot, index) => {
+                return &lt;option value={robotList[robot].robot_id}>{robotList[robot].name}&lt;/option>
+              })
+            }
+          &lt;/select>
+          &lt;Button variant="contained" color="secondary" disabled={
+            steps[0]?.location_name === '' &amp;&amp;
+              steps[0]?.location_delay === '' &amp;&amp;
+              steps[0]?.location_must_complete === false &amp;&amp;
+              steps[0]?.tts === '' &amp;&amp;
+              steps[0]?.tts_on_screen_flag === false &amp;&amp;
+              steps[0]?.tts_delay === '' &amp;&amp;
+              steps[0]?.media_link === '' &amp;&amp;
+              steps[0]?.media_delay === '' &amp;&amp;
+              steps[0]?.audio_link === '' &amp;&amp;
+              steps[0]?.audio_delay === '' &amp;&amp;
+              steps[0]?.pan === '' &amp;&amp;
+              steps[0]?.pan_delay === '' &amp;&amp;
+              steps[0]?.tilt === '' &amp;&amp;
+              steps[0]?.tilt_delay === '' ? true : false
+          } onClick={handleSaveSteps}>
+            SAVE
+          &lt;/Button>
+        &lt;/Toolbar>
+      &lt;/AppBar>
+      &lt;Modal
+        open={open}
+        onClose={handleClose}
+      >
+        {actions.movement &amp;&amp; &lt;EditMovementBody
+          onClose={handleClose}
+          steps={steps}
+          currentRow={currentActionRow}
+          handleMovementChange={handleMovementChange}
+          handleMovementSubmit={handleMovementSubmit}
+          robots={robotList}
+          locations={locationList}
+          delay={delay}
+          locationName={newMovement.location_name}
+          locationDelay={newMovement.location_delay}
+          locationRobot="null"
+          editing={editMovement}
+          reset={reset}
+          setNewMovement={setNewMovement} />}
+      &lt;/Modal>
+      &lt;Modal
+        open={headOpen}
+        onClose={handleHeadClose}
+      >
+        {actions.head &amp;&amp; &lt;EditHeadBody
+          onClose={handleHeadClose}
+          steps={steps}
+          currentRow={currentActionRow}
+          handleHeadChange={handleHeadChange}
+          handleHeadSubmit={handleHeadSubmit}
+          delay={delay}
+          one={newHead.pan}
+          tilt={tilt}
+          pan={pan}
+          two={newHead.pan_delay}
+          three={newHead.tilt}
+          four={newHead.tilt_delay}
+          editing={editHead}
+          reset={reset}
+          setNewHead={setNewHead} />}
+      &lt;/Modal>
+      &lt;Modal
+        open={speakOpen}
+        onClose={handleSpeakClose}
+      >
+        {actions.speak &amp;&amp; &lt;EditSpeakBody
+          onClose={handleSpeakClose}
+          steps={steps}
+          setSteps={setSteps}
+          currentRow={currentActionRow}
+          handleSpeakChange={handleSpeakChange}
+          handleSpeakSubmit={handleSpeakSubmit}
+          handleDiplayScreenText={handleDiplayScreenText}
+          delay={delay}
+          one={newSpeak.tts}
+          two={newSpeak.tts_on_screen_flag}
+          three={newSpeak.tts_delay}
+          editing={editSpeak}
+          reset={reset}
+          setNewSpeak={setNewSpeak} />}
+      &lt;/Modal>
+      &lt;Modal
+        open={audioOpen}
+        onClose={handleAudioClose}
+      >
+        {actions.audio &amp;&amp; &lt;EditAudioBody
+          onClose={handleAudioClose}
+          steps={steps}
+          currentRow={currentActionRow}
+          handleAudioChange={handleAudioChange}
+          handleAudioSubmit={handleAudioSubmit}
+          setSteps={setSteps}
+          delay={delay}
+          one={newAudio.audio_link}
+          two={newAudio.audio_delay}
+          editing={editAudio}
+          reset={reset}
+          setNewAudio={setNewAudio} />}
+      &lt;/Modal>
+      &lt;Modal
+        open={videoOpen}
+        onClose={handleVideoClose}
+      >
+        {actions.video &amp;&amp; &lt;EditVideoBody
+          onClose={handleVideoClose}
+          steps={steps}
+          currentRow={currentActionRow}
+          handleVideoChange={handleVideoChange}
+          handleVideoSubmit={handleVideoSubmit}
+          setSteps={setSteps}
+          delay={delay}
+          one={newVideo.video_link}
+          two={newVideo.video_delay}
+          editing={editVideo}
+          reset={reset}
+          setNewVideo={setNewVideo} />}
+      &lt;/Modal>
+      &lt;Modal
+        open={entryOpen}
+        onClose={handleClose}
+        disableEnforceFocus
+      >
+        {entryOpen &amp;&amp; (
+          &lt;EntryBehaviourModal
+            behavior_name={behaviorDetails.behavior_name}
+            behavior_description={behaviorDetails.behavior_description}
+            behavior_image={behaviorDetails.behavior_image}
+            handleBehaviorChange={handleBehaviorChange}
+            handleClose={handleBehaviourModalClose}
+            handleBehaviorSubmit={handleBehaviorSubmit}
+            updateImageUrl={updateImageUrl}
+            behaviorDetails={behaviorDetails}
+            setBehaviorDetails={setBehaviorDetails}
+            behaviorEdit={behaviorEdit}
+            setBehaviorEdit={setBehaviorEdit}
+            setEntryOpen={setEntryOpen}
+          />)}
+      &lt;/Modal>
+    &lt;/>
+  )
+};
+
+export default AddEditBehaviour;
+</code></pre>
+      </article>
+    </section>
+
+
+
+
+  </div>
+
+  <nav>
+    <h2><a href="index.html">Home</a></h2>
+    <h3>Login</h3>
+    <ul>
+      <li><a href="module-Log%2520in.html">Log in</a></li>
+      <li><a href="module-Login%2520OTP%2520Verify.html">Login OTP Verify</a></li>
+      <li><a href="module-Logout.html">Logout</a></li>
+    </ul>
+    <h3>Dashboard</h3>
+    <ul>
+      <li><a href="module-Aido.html">Aido Robot</a></li>
+      <li><a href="module-Robots%2520List.html">Robots List</a></li>
+    </ul>
+    <h3>Behavior Engine</h3>
+    <ul>
+      <li><a href="module-Behavior%2520List.html">Behavior List</a></li>
+      <li><a href="module-Add%2520Behavior.html">Add Behavior</a></li>
+      <li><a href="module-Update_Modify%2520Behavior.html">Update/Modify Behavior</a></li>
+      <li><a href="module-Delete%2520Behavior.html">Delete Behavior</a></li>
+      <li><a href="module-Behavior%2520Steps%2520List.html">Behavior Steps List</a></li>
+    </ul>
+    <h3>Video Call</h3>
+    <ul>
+      <li><a href="module-Video%2520Call.html">Video Call</a></li>
+      <li><a href="module-Session%2520Creation.html">Session Creation</a></li>
+    </ul>
+    <h3>Contacts</h3>
+    <ul>
+      <li><a href="module-Contacts%2520List.html">List</a></li>
+      <li><a href="module-update%2520contact.html">Update/Modify</a></li>
+    </ul>
+    <h3>User Profile</h3>
+    <ul>
+      <li><a href="module-User%2520Profile.html">User Profile</a></li>
+      <li><a href="module-Update_Modify%2520Profile.html">Update/Modify Profile</a></li>
+    </ul>
+    <h3>Customization</h3>
+    <ul>
+      <li><a href="module-Home%2520Screen.html">Home Screen</a></li>
+      <li><a href="module-custom%2520Screen.html">custom Screen</a></li>
+      <li><a href="module-General%2520Settings.html">General Settings</a></li>
+      <li><a href="module-Navigation%2520Settings.html">Navigation Settings</a></li>
+      <li><a href="module-Mode%2520Settings.html">Mode Settings</a></li>
+      <li><a href="module-Behaviour%2520Scheduler.html">Behaviour Scheduler</a></li>
+      <li><a href="module-Add_Edit%2520Behaviour%2520Scheduler.html">Add/Edit Behaviour Scheduler</a></li>
+    </ul>
+    <h3>Map</h3>
+    <ul>
+      <li><a href="module-Map%2520Editor_Control.html">Map Editor/Control</a></li>
+    </ul>
+  </nav>
+  <br class="clear">
+
+  <footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Thu Jun 03 2021 17:59:31
+    GMT+0530 (India Standard Time)
+  </footer>
+
+  <script> prettyPrint();</script>
+  <script src="scripts/linenumber.js"> </script>
+</body>
+
+</html>

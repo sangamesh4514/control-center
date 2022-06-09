@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: Contacts.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: Contacts.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React, { useEffect, useState } from 'react';
+import { makeStyles } from '@material-ui/core/styles';
+import EditIcon from "@material-ui/icons/Edit";
+import AppBar from '@material-ui/core/AppBar';
+import Tab from '@material-ui/core/Tab';
+import TabList from '@material-ui/lab/TabList';
+import TabPanel from '@material-ui/lab/TabPanel';
+// import ContactsList from './contacts list/ContactsList';
+// import Groups from './groups/Groups';
+import { TabContext } from '@material-ui/lab';
+import { Avatar, Grid, IconButton, List, ListItem, ListItemText, Typography } from '@material-ui/core';
+import { useDispatch } from 'react-redux';
+import axios from 'axios';
+import Modal from '@material-ui/core/Modal';
+import EditContact from './EditContact';
+import Loader from '../common/DataLoaderGif/Loader';
+
+function rand() {
+    return Math.round(Math.random() * 20) - 10;
+}
+
+function getModalStyle() {
+    const top = 50 + rand();
+    const left = 50 + rand();
+
+    return {
+        top: `${top}%`,
+        left: `${left}%`,
+        transform: `translate(-${top}%, -${left}%)`,
+    };
+}
+
+const useStyles = makeStyles((theme) => ({
+    root: {
+        flexGrow: 1,
+        backgroundColor: theme.palette.background.paper,
+    },
+    paper: {
+        position: 'absolute',
+        width: '41em',
+        backgroundColor: theme.palette.background.paper,
+        border: '2px solid #000',
+        boxShadow: theme.shadows[5],
+        padding: theme.spacing(2, 4, 3),
+    },
+}));
+
+
+const Contacts = () => {
+    const [value, setValue] = React.useState('1');
+    const [contacts, setContacts] = useState([]);
+    const [selectedContact, setSelectedContact] = useState({});
+    const [open, setOpen] = React.useState(false);
+    const classes = useStyles();
+    const dispatch = useDispatch();
+    const [modalStyle] = React.useState(getModalStyle);
+
+    const userToken = localStorage.getItem("userToken");
+    const userId = localStorage.getItem("userId");
+
+    const handleChange = (event, newValue) => {
+        setValue(newValue);
+    };
+
+    function generate(element) {
+        return [0, 1, 2].map((value) =>
+            React.cloneElement(element, {
+                key: value,
+            }),
+        );
+    }
+
+    const handleEdit = (contact) => {
+        setSelectedContact(contact);
+        setOpen(true);
+    }
+
+    const handleClose = () => {
+        setOpen(false);
+    }
+
+/**
+ * Represents Contacts List Module
+ * @module {function} Contacts List 
+ */
+    const getContacts = async () => {
+
+        const user_id = userId.replace('+', '%2B');
+<<<<<<< HEAD
+        await axios.get(`http://ec2-54-176-28-246.us-west-1.compute.amazonaws.com:3000/api/v1/user/contact?userId=${user_id}`,
+=======
+        await axios.get(` https://ingendynamics.com/api/v1/user/contact?userId=${user_id}`,
+>>>>>>> fd5f6bbcf7a0cd2e0e60dd73656c3f88196b8a0a
+            {
+                headers: {
+                    Authorization: `Bearer ${userToken}`
+                }
+            }).then(
+                res => {
+                    if (res.data.status.code === 200) {
+                        console.log('success')
+                        setContacts(res.data.data);
+                    }
+                }
+            ).catch(error => {
+                if (error.response.status === 500) {
+                    alert('SERVER UNDER MAINTAINENCE, Try again!');
+                }
+            });
+    }
+
+    useEffect(async () => {
+        getContacts();
+    }, [])
+
+    return (
+        &lt;div className={classes.root} style={{ padding: '1em 1em 5em 1em' }}>
+            &lt;TabContext value={value}>
+                &lt;AppBar position="static">
+                    &lt;TabList onChange={handleChange} aria-label="simple tabs example">
+                        &lt;Tab label="Contacts" value="1" />
+                    &lt;/TabList>
+                &lt;/AppBar>
+                {/* &lt;TabPanel value="1">&lt;ContactsList />&lt;/TabPanel> */}
+                {/* &lt;TabPanel value="2">&lt;Groups />&lt;/TabPanel> */}
+            &lt;/TabContext>
+            &lt;Grid item xs={12} md={6}>
+                &lt;div className={classes.demo}>
+                    &lt;List>
+                        {contacts?.length === 0 ? (&lt;h1 style={{ background: 'lightgray', padding: '1em' }}>No Contacts found, &lt;br>&lt;/br>Import contacts from Companion App to get started!&lt;/h1>) : (
+                            contacts.map(
+                                contact => {
+                                    return &lt;ListItem>
+                                        &lt;Avatar alt="Travis Howard" src={contact.contact_profile_url} style={{ margin: '0 1em 0 0' }} />
+                                        &lt;ListItemText
+                                            primary={contact.contact_name}
+                                            secondary={contact.contact_phone_number}
+                                        />
+                                        &lt;Grid item xs={3}>
+                                            &lt;IconButton aria-label="Edit" onClick={() => handleEdit(contact)}>
+                                                &lt;EditIcon />
+                                            &lt;/IconButton>
+                                        &lt;/Grid>
+                                    &lt;/ListItem>
+                                })
+                        )
+                        }
+                    &lt;/List>
+                &lt;/div>
+            &lt;/Grid>
+            &lt;Modal
+                open={open}
+                onClose={handleClose}
+                aria-labelledby="simple-modal-title"
+                aria-describedby="simple-modal-description"
+            >
+                &lt;EditContact onClose={handleClose} contact={selectedContact} getContacts={getContacts} />
+            &lt;/Modal>
+        &lt;/div>
+    )
+}
+export default Contacts;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2>
+    <h3>Login</h3>
+    <ul>
+        <li><a href="module-Log%2520in.html">Log in</a></li>
+        <li><a href="module-Login%2520OTP%2520Verify.html">Login OTP Verify</a></li>
+        <li><a href="module-Logout.html">Logout</a></li>
+    </ul>
+    <h3>Dashboard</h3>
+    <ul>
+        <li><a href="module-Aido.html">Aido Robot</a></li>
+        <li><a href="module-Robots%2520List.html">Robots List</a></li>
+    </ul>
+    <h3>Behavior Engine</h3>
+    <ul>
+        <li><a href="module-Behavior%2520List.html">Behavior List</a></li>
+        <li><a href="module-Add%2520Behavior.html">Add Behavior</a></li>
+        <li><a href="module-Update_Modify%2520Behavior.html">Update/Modify Behavior</a></li>
+        <li><a href="module-Delete%2520Behavior.html">Delete Behavior</a></li>
+        <li><a href="module-Behavior%2520Steps%2520List.html">Behavior Steps List</a></li>
+    </ul>
+    <h3>Video Call</h3>
+    <ul>
+        <li><a href="module-Video%2520Call.html">Video Call</a></li>
+        <li><a href="module-Session%2520Creation.html">Session Creation</a></li>
+    </ul>
+    <h3>Contacts</h3>
+    <ul>
+        <li><a href="module-Contacts%2520List.html">List</a></li>
+        <li><a href="module-update%2520contact.html">Update/Modify</a></li>
+    </ul>
+    <h3>User Profile</h3>
+    <ul>
+        <li><a href="module-User%2520Profile.html">User Profile</a></li>
+        <li><a href="module-Update_Modify%2520Profile.html">Update/Modify Profile</a></li>
+    </ul>
+    <h3>Customization</h3>
+    <ul>
+        <li><a href="module-Home%2520Screen.html">Home Screen</a></li>
+        <li><a href="module-custom%2520Screen.html">custom Screen</a></li>
+        <li><a href="module-General%2520Settings.html">General Settings</a></li>
+        <li><a href="module-Navigation%2520Settings.html">Navigation Settings</a></li>
+        <li><a href="module-Mode%2520Settings.html">Mode Settings</a></li>
+        <li><a href="module-Behaviour%2520Scheduler.html">Behaviour Scheduler</a></li>
+        <li><a href="module-Add_Edit%2520Behaviour%2520Scheduler.html">Add/Edit Behaviour Scheduler</a></li>
+    </ul>
+    <h3>Map</h3>
+    <ul>
+        <li><a href="module-Map%2520Editor_Control.html">Map Editor/Control</a></li>
+    </ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Thu Jun 03 2021 16:21:11 GMT+0530 (India Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

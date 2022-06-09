@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: BehaviourSlice.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: BehaviourSlice.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { createSlice } from "@reduxjs/toolkit";
+import axios from "axios";
+import initialState from '../initialState';
+
+const userToken = localStorage.getItem("userToken");
+const userId = localStorage.getItem("userId");
+const behaviour_id = localStorage.getItem("behaviour_id");
+
+let behavior_identity;
+const behaviourSlice = createSlice({
+    name: 'behavaiour',
+    initialState: initialState.behaviour,
+    reducers: {
+        behaviourAdd: (state, { payload }) => {
+            console.log("behaviour add state: ", state, "behaviour add payload: ", payload);
+            return {
+                ...state,
+                behaviour_id: payload.id,
+                name: payload.name,
+                description: payload.description,
+                image_url: payload.image_url
+            }
+        },
+        behaviourUpdate: (state, { payload }) => {
+            console.log("behaviour update state: ", state, "behaviour update payload: ", payload);
+            return {
+                ...state,
+                name: payload.name,
+                description: payload.description,
+                image_url: payload.image_url,
+                start_from: payload.start_from,
+                repeat_sequence: payload.repeat_sequence,
+                robot_id: payload.robot_id
+            }
+        },
+        behaviourSteps: (state, { payload }) => {
+            console.log("state: ", state, "payload: ", payload);
+            return {
+                ...state,
+                steps: payload.steps
+            }
+        }
+    }
+});
+
+//actions 
+export const { behaviourAdd, behaviourUpdate, behaviourSteps } = behaviourSlice.actions;
+
+//selectors
+export const behaviourState = state => state.behaviourSlice;
+
+//reducers
+export default behaviourSlice.reducer;
+
+export const behavior_iden = behavior_identity;
+
+//thunk 
+
+/**
+   * Represents Update/Modify Behavior Module
+   * @module {function} Update/Modify Behavior
+   */
+export function behaviourUpdateApi(data, behavior_id) {
+    return async function behaviourUpdateApiThunk(dispatch) {
+        console.log("inside Behaviour Update: ", data, behavior_id);
+<<<<<<< HEAD
+        await axios.put(`https://ingendynamics.com/api/v1/user/behavior/${behavior_id}?userId=${userId}`,
+=======
+        await axios.put(` https://ingendynamics.com/api/v1/user/behavior/${behavior_id}?userId=${userId}`,
+>>>>>>> fd5f6bbcf7a0cd2e0e60dd73656c3f88196b8a0a
+            {
+                name: data.behavior_name,
+                description: data.behavior_description,
+                image_url: data.behavior_image,
+                start_from: data.start_from,
+                repeat_sequence: data.repeat_sequence,
+                robot_id: data.robot_id
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${userToken}`
+                }
+            }).then().catch(error => {
+                if (error.response.status === 500) {
+                    alert('SERVER UNDER MAINTAINENCE, Try again!');
+                }
+            });
+    }
+}
+
+/**
+   * Represents Behavior Steps List Module
+   * @module {function} Behavior Steps List
+   */
+export function behaviourStepsApi(data, behaviorId, robotId) {
+    return async function behaviourStepsApiThunk(dispatch) {
+        console.log(data, behaviorId);
+<<<<<<< HEAD
+        await axios.post(`https://ingendynamics.com/api/v1/user/step?robotId=${robotId}&amp;userId=${userId}&amp;behaviorId=${behaviorId}`,
+=======
+        await axios.post(` https://ingendynamics.com/api/v1/user/step?robotId=${robotId}&amp;userId=${userId}&amp;behaviorId=${behaviorId}`,
+>>>>>>> fd5f6bbcf7a0cd2e0e60dd73656c3f88196b8a0a
+            {
+                steps: data
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${userToken}`
+                }
+            }).then(res => {
+                if (res.status.code === 200) {
+                    const steps = res.data.data.steps;
+                    dispatch(behaviourSteps({
+                        steps
+                    }))
+                };
+            }).catch(error => {
+                if (error.response.status === 500) {
+                    alert('SERVER UNDER MAINTAINENCE, Try again!');
+                }
+            });
+    }
+}
+
+
+/**
+   * Represents Delete Behavior Module
+   * @module {function} Delete Behavior
+   */
+export function behaviourDeleteApi(id, robot_id) {
+    return async function behaviourDeleteApiThunk(dispatch) {
+
+
+<<<<<<< HEAD
+        await axios.delete(`https://ingendynamics.com/api/v1/user/behavior/${id}?robotId=${robot_id}&amp;userId=${userId}`,
+=======
+        await axios.delete(` https://ingendynamics.com/api/v1/user/behavior/${id}?robotId=${robot_id}&amp;userId=${userId}`,
+>>>>>>> fd5f6bbcf7a0cd2e0e60dd73656c3f88196b8a0a
+            {
+                headers: {
+                    Authorization: `Bearer ${userToken}`
+                }
+            }).then().catch(error => {
+                if (error.response.status === 500) {
+                    alert('SERVER UNDER MAINTAINENCE, Try again!');
+                }
+            });
+    }
+}
+
+export function behaviourListApi() {
+    return async function behaviourListApiThunk(dispatch) {
+        console.log("inside behaviour list");
+<<<<<<< HEAD
+        await axios.get(`http://ec2-54-176-28-246.us-west-1.compute.amazonaws.com:3000/web/behavior/user/${userId}?userId=${userId}`,
+=======
+        await axios.get(` https://ingendynamics.com/web/behavior/user/${userId}?userId=${userId}`,
+>>>>>>> fd5f6bbcf7a0cd2e0e60dd73656c3f88196b8a0a
+            {
+                headers: {
+                    Authorization: `Bearer ${userToken}`
+                }
+            })
+            .then(res => {
+                return res.data.data;
+            }).catch(error => {
+                if (error.response.status === 500) {
+                    alert('SERVER UNDER MAINTAINENCE, Try again!');
+                }
+            });
+    }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2>
+    <h3>Login</h3>
+    <ul>
+        <li><a href="module-Log%2520in.html">Log in</a></li>
+        <li><a href="module-Login%2520OTP%2520Verify.html">Login OTP Verify</a></li>
+        <li><a href="module-Logout.html">Logout</a></li>
+    </ul>
+    <h3>Contacts</h3>
+    <ul>
+        <li><a href="module-Contacts%2520List.html">List</a></li>
+        <li><a href="module-update%2520contact.html">Update/Modify</a></li>
+    </ul>
+    <h3>Behavior Engine</h3>
+    <ul>
+        <li><a href="module-Behavior%2520List.html">Behavior List</a></li>
+        <li><a href="module-Add%2520Behavior.html">Add Behavior</a></li>
+        <li><a href="module-Update_Modify%2520Behavior.html">Update/Modify Behavior</a></li>
+        <li><a href="module-Delete%2520Behavior.html">Delete Behavior</a></li>
+        <li><a href="module-Behavior%2520Steps%2520List.html">Behavior Steps List</a></li>
+    </ul>
+    <h3>User Profile</h3>
+    <ul>
+        <li><a href="module-User%2520Profile.html">User Profile</a></li>
+        <li><a href="module-Update_Modify%2520Profile.html">Update/Modify Profile</a></li>
+    </ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Thu Jun 03 2021 18:10:50 GMT+0530 (India Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

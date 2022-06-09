@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: NavigationSettings.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: NavigationSettings.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { Button, Container, Grid, Typography } from '@material-ui/core'
+import ArrowBackOut from "@material-ui/icons/ArrowBack";
+import React,{useState,useEffect} from 'react'
+import { useHistory } from 'react-router';
+import GeneralSettingsCard from '../common/GeneralSettingsCard';
+import NavigationSettingCard from '../common/NavigationSettingCard';
+import axios from 'axios'
+
+
+ /** * Represents Navigation Settings of the robot
+ * @module {function} Navigation Settings  */
+
+
+const NavigationSettings = () => {
+  const [state, setState] = useState({
+    bypass_obstacle: 1,
+go_to_speed_control: "high",
+navigation_timeout_sec: 50,
+obstacle_avoid: 0,
+obstacle_avoid_sensitivity: "medium"
+  })
+  const options = { 1: "1", 2: "2" };
+  const history = useHistory();
+  const [robot_id, setRobot_id] = useState(history.location.state);
+  const userToken = localStorage.getItem("userToken");
+  const userId = localStorage.getItem("userId");
+
+  useEffect(() => {
+    getAidoSettings();
+  }, []);
+
+  const handleChangeValue=(e)=>{
+   
+      state[e.target.name] = e.target.value;
+    //  updateAidoSettings(state);
+    setState({...state})
+ }
+  const handleChange = (e) => {
+    console.log(e.target.name,e.target.checked)
+    state[e.target.name] = e.target.checked ? 1 : 0;
+    // updateAidoSettings(state);
+    setState({ ...state });
+  };
+
+  const getAidoSettings = async () => {
+    await axios
+      .get(
+<<<<<<< HEAD
+        `https://ingendynamics.com/api/v1/user/setting?userId=${userId}&amp;robotId=${robot_id}`,
+=======
+        ` https://ingendynamics.com/api/v1/user/setting?userId=${userId}&amp;robotId=${robot_id}`,
+>>>>>>> fd5f6bbcf7a0cd2e0e60dd73656c3f88196b8a0a
+        {
+          headers: {
+            Authorization: `Bearer ${userToken}`,
+          },
+        }
+      )
+      .then((res) => {
+        console.log(res.data.data);
+        setState(res.data.data);
+      }).catch(err=>{
+         if (err?.response?.status === 500) {
+           alert("SERVER UNDER MAINTAINENCE, Try again!");
+         }
+        console.log(err.response.data);
+      })
+  };
+  const updateAidoSettings = async (state) => {
+    const options = {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${userToken}`,
+      },
+    };
+
+    await axios
+      .put(
+<<<<<<< HEAD
+        `https://ingendynamics.com/api/v1/user/setting?userId=${userId}&amp;robotId=${robot_id}`,
+=======
+        ` https://ingendynamics.com/api/v1/user/setting?userId=${userId}&amp;robotId=${robot_id}`,
+>>>>>>> fd5f6bbcf7a0cd2e0e60dd73656c3f88196b8a0a
+        state,
+        options
+      )
+      .then((res) => {
+        console.log("RESPONSE in Update Settings ==== : ", res);
+      })
+      .catch((err) => {
+        console.log("ERROR in Update Settings: ====", err.response.data);
+        if (err?.response?.status === 500) {
+          alert("SERVER UNDER MAINTAINENCE, Try again!");
+        }
+      });
+  };
+  return (
+    &lt;>
+      &lt;Container style={{ paddingLeft: "50px", paddingTop: "50px" }}>
+        &lt;Grid container>
+          &lt;Grid item xs={1}>
+            &lt;Button
+              // style={{ width: "100%" }}
+              onClick={() => history.push("/customization", robot_id)}
+            >
+              &lt;ArrowBackOut />
+            &lt;/Button>
+          &lt;/Grid>
+          &lt;Grid item xs={10}>
+            &lt;Typography variant="h5">
+              User's aido Navigation settings
+            &lt;/Typography>
+          &lt;/Grid>
+          &lt;Grid item xs={1}>
+            &lt;Button variant="contained" onClick={()=>updateAidoSettings(state)}>
+              Save
+            &lt;/Button>
+          &lt;/Grid>
+          &lt;Grid item xs={12} style={{ marginTop: "20px" }}>
+            &lt;Typography variant="subtitle1">
+              Obstacle Avoidance Profile
+            &lt;/Typography>
+          &lt;/Grid>
+          &lt;Grid item xs={12} style={{ marginTop: "10px" }}>
+            &lt;NavigationSettingCard
+              title="Are there any stairs or drops that might cause aido to fall?"
+              name="obstacle_avoid"
+              state={state.obstacle_avoid}
+              options={{ 1: "Yes", 0: "No" }}
+              handleChange={handleChangeValue}
+            />
+          &lt;/Grid>
+          &lt;Grid item xs={12} style={{ marginTop: "20px" }}>
+            &lt;Typography variant="subtitle1">
+              Obstacle Avoidance Sensitivity
+            &lt;/Typography>
+          &lt;/Grid>
+          &lt;Grid item xs={12} style={{ marginTop: "10px" }}>
+            &lt;NavigationSettingCard
+              title="Set specifics regarding aido's obstacle avoidance sensitivity"
+              name="obstacle_avoid_sensitivity"
+              state={state.obstacle_avoid_sensitivity}
+              options={{ High: "High", Low: "Low" }}
+              handleChange={handleChangeValue}
+            />
+          &lt;/Grid>
+          &lt;Grid item xs={12} style={{ marginTop: "20px" }}>
+            &lt;Typography variant="subtitle1">"Go To" speed control&lt;/Typography>
+          &lt;/Grid>
+          &lt;Grid item xs={12} style={{ marginTop: "10px" }}>
+            &lt;NavigationSettingCard
+              title="Set the speed to aido's navigation"
+              name="go_to_speed_control"
+              state={state.go_to_speed_control}
+              options={{ Low: "Low", High: "High" }}
+              handleChange={handleChangeValue}
+            />
+          &lt;/Grid>
+          &lt;Grid item xs={12} style={{ marginTop: "20px" }}>
+            &lt;Typography variant="subtitle1">Bypass Obstacles&lt;/Typography>
+          &lt;/Grid>
+          &lt;Grid item xs={12} style={{ marginTop: "10px" }}>
+            &lt;GeneralSettingsCard
+              title="When set to on,aido will take detours from the optimal path to avoid obstacles"
+              body="When set to off,aido will never deviate from the optimal path"
+              name={"bypass_obstacle"}
+              state={state.bypass_obstacle === 1}
+              handleChange={handleChange}
+            />
+          &lt;/Grid>
+          &lt;Grid item xs={12} style={{ marginTop: "20px" }}>
+            &lt;Typography variant="subtitle1">Navigation Timeout&lt;/Typography>
+          &lt;/Grid>
+          &lt;Grid
+            item
+            xs={12}
+            style={{ marginTop: "10px", marginBottom: "30px" }}
+          >
+            &lt;NavigationSettingCard
+              title="After the configured time,aido will stop navigation if its unable to reach destination"
+              name="navigation_timeout_sec"
+              state={state.navigation_timeout_sec}
+              options={{0:0, 10: 10, 20: 20, 30: 30 }}
+              handleChange={handleChangeValue}
+            />
+          &lt;/Grid>
+        &lt;/Grid>
+      &lt;/Container>
+    &lt;/>
+  );
+}
+
+export default NavigationSettings</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+  <h2><a href="index.html">Home</a></h2>
+  <h3>Login</h3>
+  <ul>
+      <li><a href="module-Log%2520in.html">Log in</a></li>
+      <li><a href="module-Login%2520OTP%2520Verify.html">Login OTP Verify</a></li>
+      <li><a href="module-Logout.html">Logout</a></li>
+  </ul>
+  <h3>Dashboard</h3>
+  <ul>
+      <li><a href="module-Aido.html">Aido Robot</a></li>
+      <li><a href="module-Robots%2520List.html">Robots List</a></li>
+  </ul>
+  <h3>Behavior Engine</h3>
+  <ul>
+      <li><a href="module-Behavior%2520List.html">Behavior List</a></li>
+      <li><a href="module-Add%2520Behavior.html">Add Behavior</a></li>
+      <li><a href="module-Update_Modify%2520Behavior.html">Update/Modify Behavior</a></li>
+      <li><a href="module-Delete%2520Behavior.html">Delete Behavior</a></li>
+      <li><a href="module-Behavior%2520Steps%2520List.html">Behavior Steps List</a></li>
+  </ul>
+  <h3>Video Call</h3>
+  <ul>
+      <li><a href="module-Video%2520Call.html">Video Call</a></li>
+      <li><a href="module-Session%2520Creation.html">Session Creation</a></li>
+  </ul>
+  <h3>Contacts</h3>
+  <ul>
+      <li><a href="module-Contacts%2520List.html">List</a></li>
+      <li><a href="module-update%2520contact.html">Update/Modify</a></li>
+  </ul>
+  <h3>User Profile</h3>
+  <ul>
+      <li><a href="module-User%2520Profile.html">User Profile</a></li>
+      <li><a href="module-Update_Modify%2520Profile.html">Update/Modify Profile</a></li>
+  </ul>
+  <h3>Customization</h3>
+  <ul>
+      <li><a href="module-Home%2520Screen.html">Home Screen</a></li>
+      <li><a href="module-custom%2520Screen.html">custom Screen</a></li>
+      <li><a href="module-General%2520Settings.html">General Settings</a></li>
+      <li><a href="module-Navigation%2520Settings.html">Navigation Settings</a></li>
+      <li><a href="module-Mode%2520Settings.html">Mode Settings</a></li>
+      <li><a href="module-Behaviour%2520Scheduler.html">Behaviour Scheduler</a></li>
+      <li><a href="module-Add_Edit%2520Behaviour%2520Scheduler.html">Add/Edit Behaviour Scheduler</a></li>
+  </ul>
+  <h3>Map</h3>
+  <ul>
+      <li><a href="module-Map%2520Editor_Control.html">Map Editor/Control</a></li>
+  </ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Thu Jun 03 2021 15:42:57 GMT+0530 (India Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="./add_location.css" />
+    <script
+      type="text/javascript"
+      src="http://static.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="http://static.robotwebtools.org/roslibjs/current/roslib.min.js"
+    ></script>
+    <script src="https://static.robotwebtools.org/EaselJS/current/easeljs.js"></script>
+    <script
+      type="text/javascript"
+      src="http://static.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"
+    ></script>
+
+    <script src="https://static.robotwebtools.org/roslibjs/current/roslib.js"></script>
+
+    <script
+      type="text/javascript"
+      src="http://static.robotwebtools.org/EaselJS/current/easeljs.min.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="http://static.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="http://static.robotwebtools.org/roslibjs/current/roslib.min.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="http://static.robotwebtools.org/ros2djs/current/ros2d.min.js"
+    ></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.6.7/nipplejs.js"></script>
+    <script
+      src="https://kit.fontawesome.com/a076d05399.js"
+      crossorigin="anonymous"
+    ></script> -->
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+    />
+
+    <!-- <script
+      type="text/javascript"
+      src="https://static.robotwebtools.org/nav2djs/current/nav2d.min.js"
+    ></script> -->
+
+    <!-- <script type="text/javascript" src="./nav2d.min.js"></script> -->
+
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.6.7/nipplejs.js"></script> -->
+
+    <script type="text/javascript" src="./android_map.js"></script>
+    <style>
+      button {
+        margin: 20px;
+      }.loader {
+        position: absolute;
+        left:50%;
+        top:200px;       
+  border: 16px solid #f3f3f3; /* Light grey */
+  border-top: 16px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+  visibility: hidden;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+    </style>
+  </head>
+
+  <body onload="init()" style="padding: 0px; margin: 0px">
+        <div id="loader" class="loader"></div>
+    <div style="display: flex; justify-content: space-around">
+      <div id="bottombar" style="display: flex">
+        <!-- <h1>Map Editor</h1> -->
+        <div id="map" style="padding: 5px"></div>
+        <div
+          id="zoom"
+          style="
+            display: flex;
+            flex-direction: column;
+            position: absolute;
+            right: 30px;
+            top: 30px;
+          "
+        >
+          <button
+            style="width: 40px; height: 50px; margin: 0px"
+            id="zoomIn"
+            onclick="zoomInBtnClicked()"
+          >
+            +
+          </button>
+          <button
+            style="width: 40px; height: 50px; margin: 0px"
+            id="zoomOut"
+            onclick="zoomOutBtnClicked()"
+          >
+            -
+          </button>
+        </div>
+        <!-- <p id="para">Check your Web Console for output.</p> -->
+        <div
+          id="editorbuttons"
+          style="
+            width: 1000px;
+            height: 50px;
+            position: fixed;
+            bottom: 0px;
+            left: 200px;
+            background-color: white;
+            box-shadow: 0 -4px 8px 0 rgba(0, 0, 0, 0.2);
+          "
+        >
+          <button id="virtualWall" onclick="addVirtualWall()">
+            Virtuall wall
+          </button>
+          <!-- <button onclick="saveVirtualWallCoordinates()">
+          save virtual wall
+        </button> -->
+          <button id="path" onclick="addPath()">Add path</button>
+
+          <button id="location" onclick="addLocation()">Add location</button>
+          <button onclick="save()">Save</button>
+          <!-- <button onclick="()">save location</button> -->
+          <div
+            class="popup"
+            id="locationPopup"
+            onclick="addLocationPopup()"
+            style="display: none"
+          >
+            <!-- Click me!
+          <span class="popuptext" id="locationPopup">Popup text...</span> -->
+            <label for="locationName">Location name:</label><br />
+            <input
+              type="text"
+              id="locationName"
+              name="locationName"
+              style="width: 150px; height: 50px; padding: 5px"
+            /><br />
+            <button
+              id="saveLocationBtn"
+              onclick="saveLocation(event,locationName,locationXCord,locationYCord)"
+              style="
+                padding: 10px;
+                width: fit-content;
+                height: fit-content;
+                background-color: green;
+                align-self: center;
+                color: white;
+                border: none;
+                border-radius: 3px;
+              "
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

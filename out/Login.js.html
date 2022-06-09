@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: Login.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: Login.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React, { useState } from "react";
+import { Button, Typography } from "@material-ui/core";
+import PhoneInput from "react-phone-number-input";
+import useStyles from "./styles";
+import StatBackdropModal from "../common/Modal/StatBackdropModal";
+import "react-phone-number-input/style.css";
+import { useDispatch, useSelector } from "react-redux";
+import { loginApi, loginCheckSelector } from "../../redux/slices/LoginSlice";
+import { useHistory } from "react-router";
+import axios from "axios";
+
+const Login = () => {
+  const [number, setNumber] = useState();
+  const [open, setOpen] = useState(false);
+  const [loginSuccess, setLoginSuccess] = useState(null);
+  const classes = useStyles();
+  const dispatch = useDispatch();
+  const history = useHistory();
+  const loginState = useSelector(loginCheckSelector);
+
+  /**
+ * Represents Login Module
+ * @module {function} Log in 
+ */
+  const hitLogin = (number) => {
+<<<<<<< HEAD
+    axios.post("http://ec2-54-176-28-246.us-west-1.compute.amazonaws.com:3000/api/v1/user?type=web",
+=======
+    axios.post(" https://ingendynamics.com/api/v1/user?type=web",
+>>>>>>> fd5f6bbcf7a0cd2e0e60dd73656c3f88196b8a0a
+      {
+        phone_number: number
+      })
+      .then(res => {
+        console.log(res);
+        if (res.data.status.code === 200) {
+          setLoginSuccess(true);
+          const state = {
+            request_id: res.data.data.request_id,
+            phone_number: number
+          }
+          history.push('/verify', state);
+        }
+      }).catch(err => {
+        if (err &amp;&amp; err?.response?.status === 500) {
+          alert('Invalid OTP entered, try again after 5 minutes!');
+        }
+      });
+  }
+
+  const handleSuccess = () => {
+    console.log(number);
+
+    hitLogin(number);
+
+    console.log(loginState);
+    if (loginSuccess === true) {
+      history.push('/verify');
+    } else if (loginSuccess === false) {
+      setOpen(false);
+      alert('Entered phone number is not registered with Control Center!');
+    }
+  }
+
+  const handleFailure = () => {
+    setOpen(false);
+  };
+
+  const modal = {
+    title: "Number Confirmation",
+    body: "Is the Number correct?",
+    success: "Yes",
+    failure: "No",
+    number,
+  };
+
+  return (
+    console.log(loginState),
+    &lt;>
+      &lt;div className={classes.container}>
+        &lt;div>
+          &lt;Typography variant="h2">AIDO Control Center&lt;/Typography>
+          &lt;Typography variant="h4">
+            {" "}
+            A new way to manage your robots{" "}
+          &lt;/Typography>
+        &lt;/div>
+        &lt;div style={{ display: 'flex' }}>
+          &lt;PhoneInput
+            placeholder="Enter phone number"
+            value={number}
+            defaultCountry="US"
+            onChange={(value) => {
+              setNumber(value);
+              console.log(number);
+            }}
+          />
+          &lt;Button
+            variant="contained"
+            size="small"
+            color="primary"
+            onClick={(e) => setOpen((s) => !s)}
+            disabled={!number}
+            disableElevation
+          >
+            {" "}
+            LOGIN{" "}
+          &lt;/Button>
+        &lt;/div>
+      &lt;/div>
+      {open &amp;&amp; (
+        &lt;StatBackdropModal
+          open={open}
+          handleSuccess={handleSuccess}
+          handleFailure={handleFailure}
+          modal={modal}
+        />
+      )}
+    &lt;/>
+  );
+};
+
+export default Login;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+  <h2><a href="index.html">Home</a></h2>
+  <h3>Login</h3>
+  <ul>
+      <li><a href="module-Log%2520in.html">Log in</a></li>
+      <li><a href="module-Login%2520OTP%2520Verify.html">Login OTP Verify</a></li>
+      <li><a href="module-Logout.html">Logout</a></li>
+  </ul>
+  <h3>Dashboard</h3>
+  <ul>
+      <li><a href="module-Aido.html">Aido Robot</a></li>
+      <li><a href="module-Robots%2520List.html">Robots List</a></li>
+  </ul>
+  <h3>Behavior Engine</h3>
+  <ul>
+      <li><a href="module-Behavior%2520List.html">Behavior List</a></li>
+      <li><a href="module-Add%2520Behavior.html">Add Behavior</a></li>
+      <li><a href="module-Update_Modify%2520Behavior.html">Update/Modify Behavior</a></li>
+      <li><a href="module-Delete%2520Behavior.html">Delete Behavior</a></li>
+      <li><a href="module-Behavior%2520Steps%2520List.html">Behavior Steps List</a></li>
+  </ul>
+  <h3>Video Call</h3>
+  <ul>
+      <li><a href="module-Video%2520Call.html">Video Call</a></li>
+      <li><a href="module-Session%2520Creation.html">Session Creation</a></li>
+  </ul>
+  <h3>Contacts</h3>
+  <ul>
+      <li><a href="module-Contacts%2520List.html">List</a></li>
+      <li><a href="module-update%2520contact.html">Update/Modify</a></li>
+  </ul>
+  <h3>User Profile</h3>
+  <ul>
+      <li><a href="module-User%2520Profile.html">User Profile</a></li>
+      <li><a href="module-Update_Modify%2520Profile.html">Update/Modify Profile</a></li>
+  </ul>
+  <h3>Customization</h3>
+  <ul>
+      <li><a href="module-Home%2520Screen.html">Home Screen</a></li>
+      <li><a href="module-custom%2520Screen.html">custom Screen</a></li>
+      <li><a href="module-General%2520Settings.html">General Settings</a></li>
+      <li><a href="module-Navigation%2520Settings.html">Navigation Settings</a></li>
+      <li><a href="module-Mode%2520Settings.html">Mode Settings</a></li>
+      <li><a href="module-Behaviour%2520Scheduler.html">Behaviour Scheduler</a></li>
+      <li><a href="module-Add_Edit%2520Behaviour%2520Scheduler.html">Add/Edit Behaviour Scheduler</a></li>
+  </ul>
+  <h3>Map</h3>
+  <ul>
+      <li><a href="module-Map%2520Editor_Control.html">Map Editor/Control</a></li>
+  </ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Thu Jun 03 2021 16:27:09 GMT+0530 (India Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

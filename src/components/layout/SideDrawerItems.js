@@ -1,0 +1,5 @@
+const menuItems = [
+    {
+        name: 'My'
+    }
+]

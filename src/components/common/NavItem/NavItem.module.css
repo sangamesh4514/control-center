@@ -1,0 +1,19 @@
+li {
+    list-style: none;
+    padding: 1em;
+}
+
+li:hover {
+    background-color: white;
+    color: tomato;
+}
+
+li a:hover {
+    background-color: white;
+    color: tomato;
+    margin: 0.1em;
+}
+
+li a {
+    color: inherit
+}

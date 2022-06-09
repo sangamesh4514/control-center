@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: GeneralSettings.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: GeneralSettings.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import {
+  Button,
+  Container,
+  Grid,
+  Paper,
+  Switch,
+  Typography,
+} from "@material-ui/core";
+import React, { useState,useEffect} from "react";
+import ArrowBackOut from "@material-ui/icons/ArrowBack";
+import GeneralSettingsCard from "../common/GeneralSettingsCard";
+import SelectField from "../common/SelectField";
+import NavigationSettingCard from "../common/NavigationSettingCard";
+import { useHistory } from "react-router";
+import axios from 'axios'
+
+
+ /** * Represents General Settings of the robot
+ * @module {function} General Settings  */
+
+const GeneralSettings = () => {
+  const [state, setState] = useState({
+enable_interaction_btn: 0,
+enable_power_btn: 0,
+enable_voice_wake_up: 0,
+enable_volume_btn: 0,
+show_battery_status: 0,
+battery_charge_at:0,
+stand_by: 0,
+_24_hr_format: 0
+  });
+  const history =useHistory()
+  const [robot_id, setRobot_id] = useState(history.location.state)
+   const userToken = localStorage.getItem("userToken");
+   const userId = localStorage.getItem("userId");
+  
+  useEffect(() => {
+    getAidoSettings()
+  }, [])
+  const options = {1:"Enable",0:"Disable"};
+  const handleChange = (e) => {
+    // console.log(e.target.name,e.target.checked)
+    state[e.target.name]=(e.target.checked?1:0)
+    // console.log(e.target.checked ? 1 : 0);
+    // updateAidoSettings(state)
+    setState({...state});
+  };
+  const handleChangeValue=(e)=>{
+    // console.log(e.target.name, e.target.value);
+    state[e.target.name]=e.target.value
+    // updateAidoSettings(state)
+    setState({...state})
+  }
+  const getAidoSettings=async()=>{
+     await axios
+       .get(
+<<<<<<< HEAD
+         `http://ec2-54-176-28-246.us-west-1.compute.amazonaws.com:3000/api/v1/user/setting?userId=${userId}&amp;robotId=${robot_id}`,
+=======
+         ` https://ingendynamics.com/api/v1/user/setting?userId=${userId}&amp;robotId=${robot_id}`,
+>>>>>>> fd5f6bbcf7a0cd2e0e60dd73656c3f88196b8a0a
+         {
+           headers: {
+             Authorization: `Bearer ${userToken}`,
+           },
+         }
+       )
+       .then((res) => {
+         console.log(res.data.data);
+         setState(res.data.data);
+       })
+       .catch((err) => {
+         console.log(err.response.data);
+          if (err?.response?.status === 500) {
+            alert("SERVER UNDER MAINTAINENCE, Try again!");
+          }
+       });
+}
+  const updateAidoSettings=async(state)=>{
+
+        const options = {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${userToken}`
+            }
+        };
+        console.log(state)
+        await axios
+          .put(
+<<<<<<< HEAD
+            `http://ec2-54-176-28-246.us-west-1.compute.amazonaws.com:3000/api/v1/user/setting?userId=${userId}&amp;robotId=${robot_id}`,
+=======
+            ` https://ingendynamics.com/api/v1/user/setting?userId=${userId}&amp;robotId=${robot_id}`,
+>>>>>>> fd5f6bbcf7a0cd2e0e60dd73656c3f88196b8a0a
+            state,
+            options
+          )
+          .then((res) => {
+            console.log("RESPONSE in Update Settings ==== : ", res);
+          })
+          .catch((err) => {
+            console.log("ERROR in Update Settings: ====", err.response.data);
+             if (err?.response?.status === 500) {
+               alert("SERVER UNDER MAINTAINENCE, Try again!");
+             }
+          });
+      }
+  return (
+    &lt;>
+      &lt;Container style={{ paddingLeft: "50px", paddingTop: "50px" }}>
+        &lt;Grid container>
+          &lt;Grid item xs={1}>
+            &lt;Button
+              // style={{ width: "100%" }}
+              onClick={() => history.push("/customization", robot_id)}
+            >
+              &lt;ArrowBackOut />
+            &lt;/Button>
+          &lt;/Grid>
+          &lt;Grid item xs={10}>
+            &lt;Typography variant="h5">User's aido General settings&lt;/Typography>
+          &lt;/Grid>
+          &lt;Grid item xs={1}>
+            &lt;Button variant="contained" onClick={()=>updateAidoSettings(state)}>
+              Save
+            &lt;/Button>
+          &lt;/Grid>
+          &lt;Grid item xs={12} style={{ marginTop: "20px" }}>
+            &lt;Typography variant="subtitle1">Date and time&lt;/Typography>
+          &lt;/Grid>
+          &lt;Grid item xs={12} style={{ marginTop: "10px" }}>
+            &lt;GeneralSettingsCard
+              title={"24-Hour Time"}
+              name="_24_hr_format"
+              state={state._24_hr_format === 1}
+              handleChange={handleChange}
+            />
+          &lt;/Grid>
+          &lt;Grid item xs={12} style={{ marginTop: "20px" }}>
+            &lt;Typography variant="subtitle1">Battery&lt;/Typography>
+          &lt;/Grid>
+          &lt;Grid item xs={12} style={{ marginTop: "10px" }}>
+            &lt;GeneralSettingsCard
+              title={"Battery percentage"}
+              name={"show_battery_status"}
+              state={state.show_battery_status === 1}
+              handleChange={handleChange}
+            />
+          &lt;/Grid>
+          &lt;Grid item xs={12} style={{ marginTop: "1px" }}>
+            &lt;Grid container>
+              &lt;NavigationSettingCard
+                title="Return to homebase at low charge"
+                body="At low charge aido will charge itself"
+                name="battery_charge_at"
+                state={state.battery_charge_at}
+                options={{0:"0", 20: "20", 30: "30", 40: "40", 50: "50" }}
+                handleChange={handleChangeValue}
+              />
+            &lt;/Grid>
+          &lt;/Grid>
+          &lt;Grid item xs={12} style={{ marginTop: "20px" }}>
+            &lt;Typography variant="subtitle1">Standby&lt;/Typography>
+          &lt;/Grid>
+          &lt;Grid item xs={12} style={{ marginTop: "10px" }}>
+            &lt;GeneralSettingsCard
+              title={"When not in use brightness will be minimum."}
+              name="stand_by"
+              state={state.stand_by === 1}
+              handleChange={handleChange}
+            />
+          &lt;/Grid>
+          &lt;Grid item xs={12} style={{ marginTop: "20px" }}>
+            &lt;Typography variant="subtitle1">Touch interaction&lt;/Typography>
+          &lt;/Grid>
+          &lt;Grid item xs={12} style={{ marginTop: "10px" }}>
+            &lt;GeneralSettingsCard
+              title={"Volume buttons"}
+              body={"Enable/Disable the volume buttons"}
+              name="enable_volume_btn"
+              state={state.enable_volume_btn === 1}
+              handleChange={handleChange}
+            />
+          &lt;/Grid>
+          &lt;Grid item xs={12} style={{ marginTop: "1px" }}>
+            &lt;GeneralSettingsCard
+              title={"Power button"}
+              body={"Enable/Disable the power buttons"}
+              name="enable_power_btn"
+              state={state.enable_power_btn === 1}
+              handleChange={handleChange}
+            />
+          &lt;/Grid>
+          &lt;Grid item xs={12} style={{ marginTop: "1px" }}>
+            &lt;NavigationSettingCard
+              title="Interaction Button"
+              body="Interaction button will work as configured"
+              name="enable_interaction_btn"
+              state={state.enable_interaction_btn}
+              options={options}
+              handleChange={handleChangeValue}
+            />
+          &lt;/Grid>
+          &lt;Grid item xs={12} style={{ marginTop: "20px" }}>
+            &lt;Typography variant="subtitle1">Voice interaction&lt;/Typography>
+          &lt;/Grid>
+          &lt;Grid
+            item
+            xs={12}
+            style={{ marginTop: "10px", marginBottom: "30px" }}
+          >
+            &lt;GeneralSettingsCard
+              title={"Wake up"}
+              body={"Wake-up allows to triggers aido by voice"}
+              name="enable_voice_wake_up"
+              state={state.enable_voice_wake_up === 1}
+              handleChange={handleChange}
+            />
+          &lt;/Grid>
+        &lt;/Grid>
+      &lt;/Container>
+    &lt;/>
+  );
+};
+
+export default GeneralSettings;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-General%2520Settings.html">General Settings</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Thu Jun 03 2021 15:41:46 GMT+0530 (India Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

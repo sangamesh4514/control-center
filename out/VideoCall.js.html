@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: VideoCall.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: VideoCall.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React, { useState, useEffect } from "react";
+import { Paper, Container, Snackbar } from "@material-ui/core";
+import SelectField from "../common/SelectField";
+import axios from "axios";
+import Button from "../common/Button";
+import { initializeSession, endSession,createSession, sessionMembers } from "./session";
+import firebase from './../../firebase'
+import "./styles.css";
+import { Alert } from "@material-ui/lab";
+
+
+ /** * Represents Video Call to all Robots
+ * @module {function} Video Call  */
+
+
+const VideoCall = () => {
+  const [robotId, setRobotId] = useState();
+  const [open, setOpen] = useState(false)
+  const [robotList, setRobotList] = useState({});
+  const [firebaseToken, setFirebaseToken] = useState();
+  const [robotListData, setRobotListData] = useState();
+  const userId = localStorage.getItem("userId");
+  const sessionData = JSON.parse(localStorage.getItem("session"));
+  const options = {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("userToken")}`,
+    },
+  };
+ const messaging=firebase.messaging()
+
+  useEffect(() => {
+   
+
+    const getRobotList = async () => {
+      await axios
+        .get(
+<<<<<<< HEAD
+          `https://ingendynamics.com/api/v1/user/all-robot?userId=${userId}`,
+=======
+          ` https://ingendynamics.com/api/v1/user/all-robot?userId=${userId}`,
+>>>>>>> fd5f6bbcf7a0cd2e0e60dd73656c3f88196b8a0a
+          options
+        )
+        .then((res) => {
+          console.log("RESPONSE ==== : ", res.data.data);
+          const listData = res.data.data;
+          const list = {};
+          listData.map((a, i) => (list[i] = a.name));
+          setRobotListData(listData);
+          setRobotList(list);
+        })
+        .catch((err) => {
+          console.log(err.response.data);
+          if (err?.response?.status === 500) {
+            alert("SERVER UNDER MAINTAINENCE, Try again!");
+          } else {
+            alert("No Robots To Call");
+          }
+        });
+    };
+
+    Notification.requestPermission()
+      .then(() => {
+        return messaging.getToken();
+      })
+      .then((token) => {
+        // console.log(token);
+        localStorage.setItem("fcm_token", token);
+        setFirebaseToken(token);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+
+    messaging.onMessage((payload) => console.log(payload));
+
+    getRobotList();
+    const sessionData = JSON.parse(localStorage.getItem("session"));
+    createSession(sessionData);
+  }, []);
+
+  const handleChange = (e) => {
+    setRobotId(e.target.value);
+  };
+
+  const handleCall = async () => {
+
+    console.log(robotListData[robotId]);
+    await axios
+      .get(
+<<<<<<< HEAD
+        `https://ingendynamics.com/api/v1/user/token?sessionId=${sessionData.session_id}&amp;userId=${userId}`,
+=======
+        ` https://ingendynamics.com/api/v1/user/token?sessionId=${sessionData.session_id}&amp;userId=${userId}`,
+>>>>>>> fd5f6bbcf7a0cd2e0e60dd73656c3f88196b8a0a
+        options
+      )
+      .then(async (res) => {
+        initializeSession(res.data.data.token);
+        // console.log(res)
+        await axios
+          .post(
+<<<<<<< HEAD
+            `https://ingendynamics.com/api/v1/user/startcall?userId=${userId}&amp;type=web`,
+=======
+            ` https://ingendynamics.com/api/v1/user/startcall?userId=${userId}&amp;type=web`,
+>>>>>>> fd5f6bbcf7a0cd2e0e60dd73656c3f88196b8a0a
+            {
+              user_id: userId,
+              robot_id: robotListData[robotId].robot_id,
+              session_id: sessionData.session_id,
+              caller_name: "web" + userId,
+              sender_fcm_token: firebaseToken,
+              receiver_fcm_token: robotListData[robotId].fcm_token,
+              user_role: `${robotListData[robotId].user_role}`,
+            },
+            options
+          )
+          .then((res) => console.log(res))
+          .catch((err) => {
+            console.log("calling",err.response.data)
+        });
+      })
+      .catch((err) => {
+        if (err?.response?.status === 500) {
+          alert("SERVER UNDER MAINTAINENCE, Try again!");
+        }
+        console.log(err.response.data)});
+     setTimeout(function () {
+       const stream=sessionMembers()
+       if(stream===undefined){
+         endSession()
+         setOpen((s) => !s);
+       }
+     }, 30000);
+  };
+
+  const handleClose=()=>setOpen(s=>!s)
+  
+  const handleEndCall=(e)=>{ 
+    endSession()
+  }  
+
+  return (
+    &lt;>
+      &lt;Container>
+        &lt;div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: "50px",
+          }}
+        >
+          &lt;Paper style={{ height: "100px", width: "800px", paddingTop: "25px",paddingLeft:'25px' }}>
+            &lt;SelectField
+              label={"Choose Robot"}
+              selectValue={robotId}
+              handleChange={handleChange}
+              options={robotList}
+            />
+            &lt;Button
+              name={"call"}
+              disabled={robotId === undefined}
+              handleClick={handleCall}
+              style={{marginRight:"10px"}}
+            />
+            &lt;Button name={"End Call"} handleClick={handleEndCall} />
+          &lt;/Paper>
+        &lt;/div>
+      &lt;/Container>
+      &lt;div id="videos">
+        &lt;div id="publisher">&lt;/div>
+        &lt;div id="subscriber">&lt;/div>
+      &lt;/div>
+      &lt;Snackbar open={open} autoHideDuration={4000} onClose={handleClose}>
+        &lt;Alert onClose={handleClose} severity="info">
+          your robot is busy,pls try again later!
+        &lt;/Alert>
+      &lt;/Snackbar>
+    &lt;/>
+  );
+};
+
+export default VideoCall;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+  <h2><a href="index.html">Home</a></h2>
+  <h3>Login</h3>
+  <ul>
+      <li><a href="module-Log%2520in.html">Log in</a></li>
+      <li><a href="module-Login%2520OTP%2520Verify.html">Login OTP Verify</a></li>
+      <li><a href="module-Logout.html">Logout</a></li>
+  </ul>
+  <h3>Dashboard</h3>
+  <ul>
+      <li><a href="module-Aido.html">Aido Robot</a></li>
+      <li><a href="module-Robots%2520List.html">Robots List</a></li>
+  </ul>
+  <h3>Behavior Engine</h3>
+  <ul>
+      <li><a href="module-Behavior%2520List.html">Behavior List</a></li>
+      <li><a href="module-Add%2520Behavior.html">Add Behavior</a></li>
+      <li><a href="module-Update_Modify%2520Behavior.html">Update/Modify Behavior</a></li>
+      <li><a href="module-Delete%2520Behavior.html">Delete Behavior</a></li>
+      <li><a href="module-Behavior%2520Steps%2520List.html">Behavior Steps List</a></li>
+  </ul>
+  <h3>Video Call</h3>
+  <ul>
+      <li><a href="module-Video%2520Call.html">Video Call</a></li>
+      <li><a href="module-Session%2520Creation.html">Session Creation</a></li>
+  </ul>
+  <h3>Contacts</h3>
+  <ul>
+      <li><a href="module-Contacts%2520List.html">List</a></li>
+      <li><a href="module-update%2520contact.html">Update/Modify</a></li>
+  </ul>
+  <h3>User Profile</h3>
+  <ul>
+      <li><a href="module-User%2520Profile.html">User Profile</a></li>
+      <li><a href="module-Update_Modify%2520Profile.html">Update/Modify Profile</a></li>
+  </ul>
+  <h3>Customization</h3>
+  <ul>
+      <li><a href="module-Home%2520Screen.html">Home Screen</a></li>
+      <li><a href="module-custom%2520Screen.html">custom Screen</a></li>
+      <li><a href="module-General%2520Settings.html">General Settings</a></li>
+      <li><a href="module-Navigation%2520Settings.html">Navigation Settings</a></li>
+      <li><a href="module-Mode%2520Settings.html">Mode Settings</a></li>
+      <li><a href="module-Behaviour%2520Scheduler.html">Behaviour Scheduler</a></li>
+      <li><a href="module-Add_Edit%2520Behaviour%2520Scheduler.html">Add/Edit Behaviour Scheduler</a></li>
+  </ul>
+  <h3>Map</h3>
+  <ul>
+      <li><a href="module-Map%2520Editor_Control.html">Map Editor/Control</a></li>
+  </ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Thu Jun 03 2021 16:14:26 GMT+0530 (India Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
